@@ -1,0 +1,219 @@
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Test Harness for MySQLSchemaProvider" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="System.Design" %>
+<%@ Assembly Name="System.Data" %>
+
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Data" %>
+<%-- 
+Name:			SchemaTest.cst
+Author: 		David Neal
+				www.ChristianASP.NET
+Description: 	Test harness for custom schema provider
+--%>
+<script runat="template">
+
+private DatabaseSchema _sourceDatabase;
+
+public DatabaseSchema SourceDatabase 
+{
+    get { return _sourceDatabase; }
+    set 
+	{ 
+		_sourceDatabase = value; 
+	}
+}
+
+public void WriteTableNames()
+{
+	string cnnString = SourceDatabase.ConnectionString;
+	foreach(TableSchema ts in SourceDatabase.Tables)
+	{
+		Response.WriteLine(ts.Name);
+		WriteTableKeys(ts.Name, cnnString);
+		WriteTableIndexes(ts.Name, cnnString);
+	}
+		
+}
+
+public string GetViewNames()
+{
+	string views = string.Empty;
+	
+	foreach(ViewSchema vs in SourceDatabase.Views)
+	{
+		views += vs.Name + ", ";
+	}
+	
+	if (views.Length > 0)
+		views = views.Substring(0, views.Length - 2);
+		
+	return views;
+}
+
+public string GetSPNames()
+{
+	string sp = string.Empty;
+	
+	foreach(CommandSchema cs in SourceDatabase.Commands)
+	{
+		sp += cs.Name + ", ";
+	}
+	if (sp.Length > 0)
+		sp = sp.Substring(0, sp.Length - 2);
+		
+	return sp;
+}
+
+public string GetColumns()
+{
+	string s = string.Empty;
+	
+	foreach(TableSchema ts in SourceDatabase.Tables)
+	{
+		s += ts.Name + Environment.NewLine;
+		foreach(ColumnSchema cc in ts.Columns)
+		{
+			s += string.Format(" - Name={0} : DataType={1} : Size={2} : AllowDBNull={3} : IsPrimaryKey={4}", cc.Name, cc.DataType, cc.Size, cc.AllowDBNull, cc.IsPrimaryKeyMember) + Environment.NewLine;
+		}
+	}
+	
+	return s;
+}
+
+public string GetViewColumns()
+{
+	string s = string.Empty;
+	
+	foreach(ViewSchema vs in SourceDatabase.Views)
+	{
+		s += vs.Name + Environment.NewLine;
+		foreach(ViewColumnSchema vcs in vs.Columns)
+		{
+			s += string.Format(" - {0}:{1}:{2}:{3}", vcs.Name, vcs.DataType, vcs.Size, vcs.AllowDBNull) + Environment.NewLine;
+		}
+	}
+	
+	return s;
+}
+
+public string GetPrimaryKeys()
+{
+	string s = string.Empty;
+	
+	foreach(TableSchema ts in SourceDatabase.Tables)
+	{
+		s += ts.Name + ": ";
+		if (ts.HasPrimaryKey == true)
+		{
+			PrimaryKeySchema pks = ts.PrimaryKey;
+			s += pks.Name;
+			for(int i = 0; i < pks.MemberColumns.Count; i++)
+			{
+				s += ", " + pks.MemberColumns[i];
+			}
+		}
+		else
+		{
+			s += "N/A";
+		}
+		s += Environment.NewLine;
+	}
+	
+	return s;
+}
+
+public void WriteTableKeys(string table, string cnnString)
+{
+	TableSchema tbl = SourceDatabase.Tables[table];
+	TableKeySchema[] tksc = SourceDatabase.Provider.GetTableKeys(cnnString, tbl);
+	Response.WriteLine("Keys: ");
+	if (tksc.Length > 0)
+	{
+		for(int i = 0; i < tksc.Length; i++)
+		{
+			TableKeySchema tks = tksc[i];
+			Response.WriteLine(" - " + tks.Name);
+			Response.Write("   - PK Table: " + tks.PrimaryKeyTable.Name);
+			foreach(ColumnSchema pkcs in tks.PrimaryKeyMemberColumns)
+			{
+				Response.Write(":" + pkcs.Name);
+			}
+			Response.WriteLine("");
+			Response.Write("   - FK Table: " + tks.ForeignKeyTable.Name);
+			foreach(ColumnSchema fkcs in tks.ForeignKeyMemberColumns)
+			{
+				Response.Write(":" + fkcs.Name);
+			}
+			Response.WriteLine("");
+		}
+	}
+	else
+	{
+		Response.WriteLine("N/A");
+	}
+}
+
+public void WriteTableIndexes(string table, string cnnString)
+{
+	TableSchema tbl = SourceDatabase.Tables[table];
+	IndexSchema[] ndxsc = SourceDatabase.Provider.GetTableIndexes(cnnString, tbl);
+	Response.WriteLine("Indexes: ");
+	if (ndxsc.Length > 0)
+	{
+		for(int i = 0; i < ndxsc.Length; i++)
+		{
+			IndexSchema ndxs = ndxsc[i];
+			Response.Write(" - " + ndxs.Name);
+			foreach(ColumnSchema col in ndxs.MemberColumns)
+			{
+				Response.Write(":" + col.Name);
+			}
+			Response.WriteLine("");
+			Response.WriteLine("   - IsPrimaryKey: " + ndxs.IsPrimaryKey.ToString());
+			Response.WriteLine("   - IsUnique: " + ndxs.IsUnique.ToString());
+			Response.WriteLine("   - IsClustered: " + ndxs.IsClustered.ToString());
+		}
+	}
+	else
+	{
+		Response.WriteLine("N/A");
+	}
+}
+
+public void WriteStoredProcedures()
+{
+	Response.WriteLine("Stored Procedures: " + SourceDatabase.Commands.Count.ToString());
+	foreach(CommandSchema sp in SourceDatabase.Commands)
+	{
+		Response.WriteLine("Name: " + sp.Name);
+		Response.WriteLine("Date Created: " + sp.DateCreated.ToShortDateString());
+		Response.WriteLine("  Input Params:");
+		foreach(ParameterSchema ips in sp.AllInputParameters)
+		{
+			Response.WriteLine("  - " + ips.Name + " : " + ips.DataType + " : " + ips.NativeType);
+		}
+		Response.WriteLine("  Output Params:");
+		foreach(ParameterSchema ips in sp.AllOutputParameters)
+		{
+			Response.WriteLine("  - " + ips.Name + " : " + ips.DataType + " : " + ips.NativeType);
+		}
+		Response.WriteLine("Def: ");
+		Response.WriteLine(sp.CommandText);
+	}
+}
+
+</script>
+
+Testing Schema Provider
+
+Schema Provider Name: <%= SourceDatabase.Provider.Name %>
+Database Name: <%= SourceDatabase.Name %>
+Tables: <% WriteTableNames(); %>
+Views: <%= GetViewNames() %>
+Stored Procedures: <%= GetSPNames() %>
+Table Columns: <%= GetColumns() %>
+View Columns: <%= GetViewColumns() %>
+Primary Keys: <%= GetPrimaryKeys() %>
+
+<% WriteStoredProcedures(); %>

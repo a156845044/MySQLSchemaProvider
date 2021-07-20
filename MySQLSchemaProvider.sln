@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.852
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLSchemaProvider", "MySQLSchemaProvider.csproj", "{EC6C019E-B942-4360-9D75-607C3C92C4AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC6C019E-B942-4360-9D75-607C3C92C4AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC6C019E-B942-4360-9D75-607C3C92C4AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC6C019E-B942-4360-9D75-607C3C92C4AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC6C019E-B942-4360-9D75-607C3C92C4AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {790D040D-2587-4F23-BF49-D09D70D4F843}
+	EndGlobalSection
+EndGlobal
